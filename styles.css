@@ -16,6 +16,16 @@ body {
     cursor: pointer;
 }
 
+#clear-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: gray;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
 #grid-container {
     display: grid;
     grid-template-columns: repeat(4, 50px);
@@ -39,3 +49,4 @@ body {
 .cell.selected {
     cursor: not-allowed;
 }
+
