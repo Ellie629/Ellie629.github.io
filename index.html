@@ -2,61 +2,26 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>多人格子遊戲</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>RJPQ 工具</title>
 </head>
 <body>
-    <h1>多人即時格子遊戲</h1>
-    <button id="create-room">創建新房間</button>
-    <input type="text" id="room-code" placeholder="輸入房間碼">
-    <button id="join-room">加入房間</button>
-
-    <h3>你的顏色：</h3>
-    <p id="user-color"></p>
-
-    <div id="grid-container" style="display: grid; grid-template-columns: repeat(4, 50px); gap: 5px;"></div>
-    <button id="clear-grid">清除格子</button>
+    <h1>RJPQ 工具</h1>
+    <h2><a href="/create-room"><button>創建房間</button></a></h2>
+    <input type="text" id="room_code" placeholder="輸入房間碼">
+    <button onclick="joinRoom()">加入房間</button>
 
     <script>
-        let socket = io("http://127.0.0.1:5000");
-        let roomCode = "";
-        let userId = Math.floor(Math.random() * 4) + 1;
-
-        $("#create-room").click(() => {
-            $.post("/create-room", function(data) {
-                roomCode = data.room_code;
-                $("#room-code").val(roomCode);
-                joinRoom();
-            });
-        });
-
-        $("#join-room").click(joinRoom);
-
         function joinRoom() {
-            roomCode = $("#room-code").val();
-            socket.emit("join", { room_code: roomCode });
-            $("#user-color").text(["紅色", "藍色", "綠色", "黃色"][userId - 1]);
+            let code = document.getElementById("room_code").value;
+            fetch("/join-room", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ room_code: code })
+            }).then(res => res.json()).then(data => {
+                if (data.success) window.location.href = `/room/${code}`;
+                else alert("房間不存在！");
+            });
         }
-
-        socket.on("update_grid", function(grid) {
-            $("#grid-container").html("");
-            for (let row = 0; row < 10; row++) {
-                for (let col = 0; col < 4; col++) {
-                    let cell = $("<div></div>").css({
-                        width: "50px", height: "50px", border: "1px solid black",
-                        backgroundColor: grid[row][col] || "white"
-                    }).data({ row, col }).click(selectCell);
-                    $("#grid-container").append(cell);
-                }
-            }
-        });
-
-        function selectCell() {
-            $.post("/select", JSON.stringify({ room_code: roomCode, user_id: userId, row: $(this).data("row"), col: $(this).data("col") }), () => {}, "json");
-        }
-
-        $("#clear-grid").click(() => $.post(`/clear/${roomCode}`));
     </script>
 </body>
 </html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>秘密小房間</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
+</head>
+<body>
+    <h1>房間碼：{{ room_code }}</h1>
+    <h3>選擇你的顏色：</h3>
+    {% for color in colors %}
+        <button onclick="setColor('{{ color }}')" style="background: {{ color }};">{{ color }}</button>
+    {% endfor %}
+    
+    <div id="grid"></div>
+    <button onclick="clearGrid()">Reset</button>
+
+    <script>
+        let socket = io();
+        let roomCode = "{{ room_code }}";
+        let selectedColor = "";
+
+        function setColor(color) { selectedColor = color; }
+
+        function renderGrid(grid) {
+            let html = "";
+            for (let row = 9; row >= 0; row--) {
+                html += `<div>${row+1} `;
+                for (let col = 0; col < 4; col++) {
+                    html += `<button onclick="selectCell(${row}, ${col})" style="width:30px;height:30px;background:${grid[row][col] || 'white'};"></button>`;
+                }
+                html += "</div>";
+            }
+            document.getElementById("grid").innerHTML = html;
+        }
+
+        function selectCell(row, col) {
+            if (!selectedColor) return alert("請先選擇顏色！");
+            socket.emit("select_cell", { room_code: roomCode, row, col, color: selectedColor });
+        }
+
+        function clearGrid() { socket.emit("clear_grid", { room_code: roomCode }); }
+
+        socket.emit("join", { room_code: roomCode });
+        socket.on("update_grid", renderGrid);
+    </script>
+</body>
+</html>
+
