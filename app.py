@@ -35,6 +35,13 @@ def create_room():
         return render_template("room.html", room_code=room_code, colors=user_colors)
     return render_template("create_room.html")
 
+@app.route('/example', methods=['GET', 'POST'])
+def example():
+    if request.method == 'POST':
+        return "Received POST request"
+    return "Received GET request"
+
+
 
 @app.route("/join-room", methods=["POST"])
 def join_room_api():
